@@ -69,6 +69,14 @@ function init () {
 
   if (apiProject.template.forceLanguage) { setLanguage(apiProject.template.forceLanguage); }
 
+  // Patch the body params
+  $.each(api, (index, entry) => {
+    if (entry.body)
+    {
+      entry.body = {"fields":{"Body": entry.body}};
+    }
+  });
+
   //
   // Data transform
   //
@@ -94,7 +102,7 @@ function init () {
     // get titles from the first entry of group[].name[] (name has versioning)
     let titles = [];
     $.each(groupEntries, (titleName, entries) => {
-      const title = entries[0].title;
+      const title = entries[0].url + " " + entries[0].typeName;
       if (title) {
         // title.toLowerCase().replace(/[äöüß]/g, function ($0) { return umlauts[$0]; });
         titles.push(title.toLowerCase() + '#~#' + titleName); // '#~#' keep reference to titleName after sorting
@@ -700,9 +708,12 @@ function init () {
       fields.compare.id = fields.compare.id.replace(/\./g, '_');
 
       let entry = sourceEntry;
+      
       if (entry.header && entry.header.fields) { fields._hasTypeInHeaderFields = _hasTypeInFields(entry.header.fields); }
 
       if (entry.parameter && entry.parameter.fields) { fields._hasTypeInParameterFields = _hasTypeInFields(entry.parameter.fields); }
+
+      if (entry.body && entry.body.fields) { fields._hasTypeInBodyFields = _hasTypeInFields(entry.body.fields); }
 
       if (entry.error && entry.error.fields) { fields._hasTypeInErrorFields = _hasTypeInFields(entry.error.fields); }
 
@@ -714,6 +725,8 @@ function init () {
       if (fields._hasTypeInHeaderFields !== true && entry.header && entry.header.fields) { fields._hasTypeInHeaderFields = _hasTypeInFields(entry.header.fields); }
 
       if (fields._hasTypeInParameterFields !== true && entry.parameter && entry.parameter.fields) { fields._hasTypeInParameterFields = _hasTypeInFields(entry.parameter.fields); }
+
+      if (fields._hasTypeInBodyFields !== true && entry.body && entry.body.fields) { fields._hasTypeInBodyFields = _hasTypeInFields(entry.body.fields); }
 
       if (fields._hasTypeInErrorFields !== true && entry.error && entry.error.fields) { fields._hasTypeInErrorFields = _hasTypeInFields(entry.error.fields); }
 
@@ -772,6 +785,10 @@ function init () {
 
     if (entry.parameter && entry.parameter.fields) {
       fields._hasTypeInParameterFields = _hasTypeInFields(entry.parameter.fields);
+    }
+
+    if (entry.body && entry.body.fields) {
+      fields._hasTypeInBodyFields = _hasTypeInFields(entry.body.fields);
     }
 
     if (entry.error && entry.error.fields) {
